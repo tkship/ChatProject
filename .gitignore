@@ -32,7 +32,9 @@
 *.app
 
 # Vs
-*.vcxproj.*
+*.vcxproj
+*.filters
+*.user
 *.sln
 *.vs
 
