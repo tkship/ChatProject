@@ -117,6 +117,70 @@ LogicSystem::LogicSystem()
         retRoot["error"] = Success;
         beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
     });
+
+    RegisterPost("/ResetPwd", [](std::shared_ptr<HttpConnection> aConnection) {
+        auto bodyData = boost::beast::buffers_to_string(aConnection->mRequest.body().data());
+
+        Json::Value root;
+        Json::Reader reader;
+        Json::Value retRoot;
+        if (!reader.parse(bodyData, root))
+        {
+            retRoot["error"] = "JsonParseError";
+            beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
+            return;
+        }
+
+        if ( !root.isMember("email")
+            || !root.isMember("password")
+            || !root.isMember("confirmPwd")
+            || !root.isMember("verifyCode"))
+        {
+            retRoot["error"] = "JsonParseError";
+            beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
+            return;
+        }
+
+        // 验证
+        // 1. 邮箱是否不存在
+        // 2. 验证码是否正确
+        std::string email = root["email"].asString();
+        std::string trueVerifyCode;
+
+        if (!RedisMgr::GetInstance().Get(email, trueVerifyCode))
+        {
+            retRoot["error"] = Redis_KeyNotFound;
+            beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
+            return;
+        }
+
+        if (root["verifyCode"].asString() != trueVerifyCode)
+        {
+            retRoot["error"] = VerifyCodeNotMatch;
+            beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
+            return;
+        }
+
+        MySQLMgr& mysqlMgr = MySQLMgr::GetInstance();
+        ConfigMgr& configMgr = ConfigMgr::GetInstance();
+        if (!mysqlMgr.Exists(configMgr["MySQLServer"]["userInfoTable"], root["email"].asString()))
+        {
+            retRoot["error"] = MySQL_UserNotExist;
+            beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
+            return;
+        }
+
+        if (!mysqlMgr.Update(configMgr["MySQLServer"]["userInfoTable"], root["email"].asString(), root["password"].asString()))
+        {
+            retRoot["error"] = MySQL_Error;
+            beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
+            return;
+        }
+
+        // 返回
+        retRoot["error"] = Success;
+        beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
+    });
 }
 
 LogicSystem::~LogicSystem()

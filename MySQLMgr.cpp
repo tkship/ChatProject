@@ -84,7 +84,7 @@ bool MySQLConnection::Exists(const std::string& aTableName, const std::string& a
 	try
 	{
 		std::string command = "select * from " + aTableName + " where "
-			+ "email=\"" + aEmail + "\"";
+			+ "Email=\"" + aEmail + "\"";
 
 		mRes = mStatement->executeQuery(command);
 		if (!mRes)
@@ -104,6 +104,35 @@ bool MySQLConnection::Exists(const std::string& aTableName, const std::string& a
 	catch (sql::SQLException e)
 	{
 		std::cout << "Command Exists Wrong, Error is: " << std::endl;
+		std::cout << e.what() << std::endl;
+
+		return false;
+	}
+}
+
+bool MySQLConnection::Update(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd)
+{
+	// update UserInfo set `Password` = "123sdf" where `Email` = "...";
+	try
+	{
+		std::string command = "update " + aTableName +
+			" set Password = \"" + aPwd + "\"" +
+			" where email=\"" + aEmail + "\"";
+
+		if (mStatement->executeUpdate(command) == 0)
+		{
+			// 影响行数为0，认为执行失败
+			std::cout << "Command Update Failed" << std::endl;
+			return false;
+
+		}
+
+		return true;
+
+	}
+	catch (sql::SQLException e)
+	{
+		std::cout << "Command Update Wrong, Error is: " << std::endl;
 		std::cout << e.what() << std::endl;
 
 		return false;
@@ -269,6 +298,14 @@ bool MySQLMgr::Exists(const std::string& aTableName, const std::string& aEmail)
 {
 	std::unique_ptr<MySQLConnection> connection = mUserInfoDBConnectionsPool->GetConnection();
 	bool ret = connection->Exists(aTableName, aEmail);
+	mUserInfoDBConnectionsPool->ReturnConnection(std::move(connection));
+	return ret;
+}
+
+bool MySQLMgr::Update(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd)
+{
+	std::unique_ptr<MySQLConnection> connection = mUserInfoDBConnectionsPool->GetConnection();
+	bool ret = connection->Update(aTableName, aEmail, aPwd);
 	mUserInfoDBConnectionsPool->ReturnConnection(std::move(connection));
 	return ret;
 }

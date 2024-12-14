@@ -23,6 +23,7 @@ public:
 
 	bool Insert(const std::string& aTableName, const std::string& aUserName, const std::string& aEmail, const std::string& aPwd);
 	bool Exists(const std::string& aTableName, const std::string& aEmail);
+	bool Update(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd);
 	bool IsConnectionValid();
 	
 private:
@@ -73,6 +74,7 @@ public:
 
 	bool Insert(const std::string& aTableName, const std::string& aUserName, const std::string& aEmail, const std::string& aPwd);
 	bool Exists(const std::string& aTableName, const std::string& aEmail);
+	bool Update(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd);
 
 private:
 	std::unique_ptr<MySQLConnectionPool> mUserInfoDBConnectionsPool;

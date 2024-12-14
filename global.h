@@ -14,6 +14,7 @@ enum ErrorCode
 	VerifyCodeNotMatch = 1003,
 	MySQL_UserExist = 1004,
 	MySQL_Error = 1005,
+	MySQL_UserNotExist = 1006
 };
 
 class Defer
