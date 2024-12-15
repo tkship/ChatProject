@@ -1,14 +1,14 @@
-#include "VarifyClient.h"
+#include "StatusClient.h"
 #include "ConfigMgr.h"
 
 #include "global.h"
 
-GRPCConnectionPool::GRPCConnectionPool(int aPoolSize)
+GRPCStatusConnectionPool::GRPCStatusConnectionPool(int aPoolSize)
 	: mIsStop(false)
 {
 	ConfigMgr& configMgr = ConfigMgr::GetInstance();
-	std::string host = configMgr["VarifyServer"]["host"];
-	std::string portStr = configMgr["VarifyServer"]["port"];
+	std::string host = configMgr["StatusServer"]["host"];
+	std::string portStr = configMgr["StatusServer"]["port"];
 	std::string url = host + ":" + portStr;
 
 	std::shared_ptr<Channel> channel = grpc::CreateChannel(
@@ -16,11 +16,11 @@ GRPCConnectionPool::GRPCConnectionPool(int aPoolSize)
 
 	for (int i = 0; i < aPoolSize; ++i)
 	{
-		mStubQueue.push(VarifyService::NewStub(channel));
+		mStubQueue.push(StatusService::NewStub(channel));
 	}
 }
 
-GRPCConnectionPool::~GRPCConnectionPool()
+GRPCStatusConnectionPool::~GRPCStatusConnectionPool()
 {
 	Stop(); // Stop不做析构的事，而是将指示符置为关闭状态
 
@@ -33,7 +33,7 @@ GRPCConnectionPool::~GRPCConnectionPool()
 	std::cout << "~GRPCConnectionPool" << std::endl;
 }
 
-void GRPCConnectionPool::Stop()
+void GRPCStatusConnectionPool::Stop()
 {
 	std::lock_guard<std::mutex> lg(mMtx);
 
@@ -41,7 +41,7 @@ void GRPCConnectionPool::Stop()
 	mCdv.notify_all();
 }
 
-std::unique_ptr<VarifyService::Stub> GRPCConnectionPool::GetRPCConnection()
+std::unique_ptr<StatusService::Stub> GRPCStatusConnectionPool::GetRPCConnection()
 {
 	std::unique_lock<std::mutex> ul(mMtx);
 	mCdv.wait(ul, [this]() {
@@ -58,12 +58,12 @@ std::unique_ptr<VarifyService::Stub> GRPCConnectionPool::GetRPCConnection()
 		return nullptr;
 	}
 
-	std::unique_ptr<VarifyService::Stub> ret = std::move(mStubQueue.front());
+	std::unique_ptr<StatusService::Stub> ret = std::move(mStubQueue.front());
 	mStubQueue.pop();
 	return ret;
 }
 
-void GRPCConnectionPool::ReturnRPCConnection(std::unique_ptr<VarifyService::Stub>&& aStub)
+void GRPCStatusConnectionPool::ReturnRPCConnection(std::unique_ptr<StatusService::Stub>&& aStub)
 {
 	std::lock_guard<std::mutex> lg(mMtx);
 	if (mIsStop)
@@ -75,33 +75,33 @@ void GRPCConnectionPool::ReturnRPCConnection(std::unique_ptr<VarifyService::Stub
 	mCdv.notify_one();
 }
 
-void VarifyClient::Stop()
+void StatusClient::Stop()
 {
 	mConnectionPool.Stop();
 }
 
-VarifyClient& VarifyClient::GetInstance()
+StatusClient& StatusClient::GetInstance()
 {
-	static VarifyClient self;
+	static StatusClient self;
 	return self;
 }
 
-message::GetVarifyRsp VarifyClient::GetVarifyCode(std::string aEmail)
+message::GetChatServerRsp StatusClient::GetChatServer(int aUid)
 {
 	ClientContext context;
-	GetVarifyReq request;
-	GetVarifyRsp response;
-	
-	request.set_email(aEmail);
-	std::unique_ptr<VarifyService::Stub> stub = mConnectionPool.GetRPCConnection();
-	Status status = stub->GetVarifyCode(&context, request, &response);
-	mConnectionPool.ReturnRPCConnection(std::move(stub));
+	GetChatServerReq request;
+	GetChatServerRsp response;
 
+	// 获取ChatServer的ip，port，token
+	request.set_uid(aUid);
+	std::unique_ptr<StatusService::Stub> stub = mConnectionPool.GetRPCConnection();
+	Status status = stub->GetChatServer(&context, request, &response);
+	mConnectionPool.ReturnRPCConnection(std::move(stub));
 	if (!status.ok())
 	{
 		response.set_error(ErrorCode::GRPC_Failed);
 	}
-	
+
 	return response;
 }
 

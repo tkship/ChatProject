@@ -2,8 +2,9 @@
 #include "HttpServer.h"
 #include "ConfigMgr.h"
 #include "RedisMgr.h"
-#include "VarifyClient.h"
 #include "MySQLMgr.h"
+#include "VerifyClient.h"
+#include "StatusClient.h"
 
 #include "json/json.h"
 
@@ -23,7 +24,7 @@ LogicSystem::LogicSystem()
         }
     });
 
-    RegisterPost("/GetVarifyCode", [](std::shared_ptr<HttpConnection> aConnection) {
+    RegisterPost("/GetVerifyCode", [](std::shared_ptr<HttpConnection> aConnection) {
         auto bodyData = boost::beast::buffers_to_string(aConnection->mRequest.body().data());
         
         Json::Value root;
@@ -46,7 +47,7 @@ LogicSystem::LogicSystem()
         std::string email = root["email"].asString();
         std::cout << "receive email is:" << email << std::endl;
 
-        GetVarifyRsp response = VarifyClient::GetInstance().GetVarifyCode(email);
+        GetVerifyRsp response = VerifyClient::GetInstance().GetVerifyCode(email);
         retRoot["error"] = response.error();
         retRoot["email"] = response.email();
         beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
@@ -217,9 +218,15 @@ LogicSystem::LogicSystem()
             return;
         }
 
-        // 返回
-        retRoot["error"] = Success;
+        // 2.获取Token和ChatServer地址
+        int uid = 2348;  // 测试
+        GetChatServerRsp response = StatusClient::GetInstance().GetChatServer(uid);
+        retRoot["error"] = response.error();
+        retRoot["host"] = response.host();
+        retRoot["port"] = response.port();
+        retRoot["token"] = response.token();
         beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
+
     });
 }
 
