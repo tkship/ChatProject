@@ -257,6 +257,7 @@ void HttpServer::Start()
 			return;
 		}
 
+		// 这里是短连接 需要维护一个vector吗？ 会内存泄露的
 		auto newConnection = std::make_shared<HttpConnection>(mPendingSocket);
 		mConnections.emplace_back(newConnection);
 		newConnection->Start();

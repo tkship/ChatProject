@@ -20,7 +20,7 @@ StatusServer::StatusServer()
 
 Status StatusServer::GetChatServer(ServerContext* context, const GetChatServerReq* aReq, GetChatServerRsp* aRsp)
 {
-	mIndex = (mIndex++) % mChatServerMes.size();
+	mIndex = (mIndex+1) % mChatServerMes.size();
 	ChatServerMes& chosenChatServer = mChatServerMes[mIndex];
 
 	aRsp->set_error(ErrorCode::Success);
