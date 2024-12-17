@@ -6,7 +6,7 @@
 #include "VerifyClient.h"
 #include "StatusClient.h"
 
-#include "json/json.h"
+#include <json/json.h>
 
 #include <cassert>
 #include <iostream> // test
