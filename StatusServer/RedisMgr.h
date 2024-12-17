@@ -31,6 +31,7 @@ public:
 
 	bool Get(const std::string& aKey, std::string& oValue);
 	bool Set(const std::string& aKey, const std::string& aValue);
+	bool SetEX(const std::string& aKey, const std::string& aValue, int aExpireTime);
 	bool Auth(const std::string& aPassword);
 	bool LPush(const std::string& aKey, const std::string& aValue);
 	bool LPop(const std::string& aKey, std::string& oValue);

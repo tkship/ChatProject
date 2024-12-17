@@ -109,38 +109,38 @@ bool MySQLConnection::Exists(const std::string& aTableName, const std::string& a
 		return false;
 	}
 }
-
-bool MySQLConnection::Exists(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd)
-{
-	try
-	{
-		std::string command = "select * from " + aTableName + " where "
-			+ "Email=\"" + aEmail + "\"" + " and " 
-			+ "Password=\"" + aPwd + "\"";
-
-		mRes = mStatement->executeQuery(command);
-		if (!mRes)
-		{
-			std::cout << "Command Exists Failed" << std::endl;
-			return false;
-		}
-
-		if (!mRes->next())
-		{
-			//std::cout << "未查询到匹配结果，认证失败" << std::endl;
-			return false;
-		}
-
-		return true;
-	}
-	catch (sql::SQLException e)
-	{
-		std::cout << "Command Exists Wrong, Error is: " << std::endl;
-		std::cout << e.what() << std::endl;
-
-		return false;
-	}
-}
+//
+//bool MySQLConnection::Exists(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd)
+//{
+//	try
+//	{
+//		std::string command = "select * from " + aTableName + " where "
+//			+ "Email=\"" + aEmail + "\"" + " and " 
+//			+ "Password=\"" + aPwd + "\"";
+//
+//		mRes = mStatement->executeQuery(command);
+//		if (!mRes)
+//		{
+//			std::cout << "Command Exists Failed" << std::endl;
+//			return false;
+//		}
+//
+//		if (!mRes->next())
+//		{
+//			//std::cout << "未查询到匹配结果，认证失败" << std::endl;
+//			return false;
+//		}
+//
+//		return true;
+//	}
+//	catch (sql::SQLException e)
+//	{
+//		std::cout << "Command Exists Wrong, Error is: " << std::endl;
+//		std::cout << e.what() << std::endl;
+//
+//		return false;
+//	}
+//}
 
 bool MySQLConnection::Update(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd)
 {
@@ -165,6 +165,38 @@ bool MySQLConnection::Update(const std::string& aTableName, const std::string& a
 	catch (sql::SQLException e)
 	{
 		std::cout << "Command Update Wrong, Error is: " << std::endl;
+		std::cout << e.what() << std::endl;
+
+		return false;
+	}
+}
+
+bool MySQLConnection::GetUserId(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd, int& oUserId)
+{
+	try
+	{
+		std::string command = "select UserId from " + aTableName + " where "
+			+ "Email=\"" + aEmail + "\"" + " and "
+			+ "Password=\"" + aPwd + "\"";
+
+		mRes = mStatement->executeQuery(command);
+		if (!mRes)
+		{
+			std::cout << "Command Exists Failed" << std::endl;
+			return false;
+		}
+
+		if (!mRes->next())
+		{
+			//std::cout << "未查询到匹配结果，认证失败" << std::endl;
+			return false;
+		}
+
+		oUserId = mRes->getInt("UserId");
+	}
+	catch (sql::SQLException e)
+	{
+		std::cout << "Command Exists Wrong, Error is: " << std::endl;
 		std::cout << e.what() << std::endl;
 
 		return false;
@@ -333,19 +365,27 @@ bool MySQLMgr::Exists(const std::string& aTableName, const std::string& aEmail)
 	mUserInfoDBConnectionsPool->ReturnConnection(std::move(connection));
 	return ret;
 }
-
-bool MySQLMgr::Exists(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd)
-{
-	std::unique_ptr<MySQLConnection> connection = mUserInfoDBConnectionsPool->GetConnection();
-	bool ret = connection->Exists(aTableName, aEmail, aPwd);
-	mUserInfoDBConnectionsPool->ReturnConnection(std::move(connection));
-	return ret;
-}
+//
+//bool MySQLMgr::Exists(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd)
+//{
+//	std::unique_ptr<MySQLConnection> connection = mUserInfoDBConnectionsPool->GetConnection();
+//	bool ret = connection->Exists(aTableName, aEmail, aPwd);
+//	mUserInfoDBConnectionsPool->ReturnConnection(std::move(connection));
+//	return ret;
+//}
 
 bool MySQLMgr::Update(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd)
 {
 	std::unique_ptr<MySQLConnection> connection = mUserInfoDBConnectionsPool->GetConnection();
 	bool ret = connection->Update(aTableName, aEmail, aPwd);
+	mUserInfoDBConnectionsPool->ReturnConnection(std::move(connection));
+	return ret;
+}
+
+bool MySQLMgr::GetUserId(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd, int& oUserId)
+{
+	std::unique_ptr<MySQLConnection> connection = mUserInfoDBConnectionsPool->GetConnection();
+	bool ret = connection->GetUserId(aTableName, aEmail, aPwd, oUserId);
 	mUserInfoDBConnectionsPool->ReturnConnection(std::move(connection));
 	return ret;
 }

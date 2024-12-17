@@ -207,19 +207,20 @@ LogicSystem::LogicSystem()
         // 验证
         // 1. 邮箱和密码是否正确
         std::string email = root["email"].asString();
-        std::string trueVerifyCode;
+        std::string password = root["password"].asString();
 
         MySQLMgr& mysqlMgr = MySQLMgr::GetInstance();
         ConfigMgr& configMgr = ConfigMgr::GetInstance();
-        if (!mysqlMgr.Exists(configMgr["MySQLServer"]["userInfoTable"], root["email"].asString(), root["password"].asString()))
+
+        // 2.获取Token和ChatServer地址
+        int uid;
+        if (!mysqlMgr.GetUserId(configMgr["MySQLServer"]["userInfoTable"], email, password, uid))
         {
             retRoot["error"] = MySQL_UserNotMatch;
             beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
             return;
         }
 
-        // 2.获取Token和ChatServer地址
-        int uid = 2348;  // 测试
         GetChatServerRsp response = StatusClient::GetInstance().GetChatServer(uid);
         retRoot["error"] = response.error();
         retRoot["host"] = response.host();

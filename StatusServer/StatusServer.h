@@ -4,6 +4,8 @@
 
 #include <grpcpp/grpcpp.h>
 
+#include <unordered_map>
+
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
@@ -31,5 +33,8 @@ private:
 	std::vector<ChatServerMes> mChatServerMes;
 	// 暂时用index来选择ChatServer
 	int mIndex;
+
+	std::unordered_map<int, std::string> mUserIdTokenMap;
+	std::unordered_map<int, ChatServerMes> mUserIdChatServerMap;
 };
 

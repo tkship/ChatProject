@@ -25,10 +25,10 @@ public:
 	void Accept();
 	void Close();
 
-	std::string GetUid();
+	std::string GetUuid();
 	boost::asio::ip::tcp::socket& GetSocket();
 private:
-	std::string mUid;  // 反向检索ChatServer中的自己，错误时删除自身
+	std::string mUuid;  // 反向检索ChatServer中的自己，错误时删除自身
 	ChatServer* mChatServerPtr;  // 反指ChatServer;
 	boost::asio::io_context& mIoService;
 	std::unique_ptr<websocket::stream< beast::tcp_stream>>  mWebSocket; // 就是socket的角色

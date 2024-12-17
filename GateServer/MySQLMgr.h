@@ -23,8 +23,9 @@ public:
 
 	bool Insert(const std::string& aTableName, const std::string& aUserName, const std::string& aEmail, const std::string& aPwd);
 	bool Exists(const std::string& aTableName, const std::string& aEmail);
-	bool Exists(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd);
+	//bool Exists(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd);
 	bool Update(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd);
+	bool GetUserId(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd, int& oUserId);
 	bool IsConnectionValid();
 	
 private:
@@ -75,8 +76,9 @@ public:
 
 	bool Insert(const std::string& aTableName, const std::string& aUserName, const std::string& aEmail, const std::string& aPwd);
 	bool Exists(const std::string& aTableName, const std::string& aEmail);
-	bool Exists(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd);
+	//bool Exists(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd);
 	bool Update(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd);
+	bool GetUserId(const std::string& aTableName, const std::string& aEmail, const std::string& aPwd, int& oUserId);
 
 private:
 	std::unique_ptr<MySQLConnectionPool> mUserInfoDBConnectionsPool;

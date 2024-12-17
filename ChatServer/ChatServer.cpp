@@ -16,7 +16,7 @@ Session::Session(boost::asio::io_context& aIoService, ChatServer* aChatServerPtr
 	, mWebSocket(std::make_unique<websocket::stream<beast::tcp_stream>>(boost::asio::make_strand(aIoService)))
 {
 	boost::uuids::uuid uid = boost::uuids::random_generator()();
-	mUid = boost::uuids::to_string(uid);
+	mUuid = boost::uuids::to_string(uid);
 }
 
 Session::~Session()
@@ -34,9 +34,9 @@ void Session::Start()
 			if (aEc)
 			{
 				// 读取出错，删除自身连接
-				std::cout << "Uid[" << self->mUid << "] read wrong, error is :" << std::endl;
+				std::cout << "Uid[" << self->mUuid << "] read wrong, error is :" << std::endl;
 				std::cout << aEc.what() << std::endl;
-				self->mChatServerPtr->RemoveSession(self->mUid);
+				self->mChatServerPtr->RemoveSession(self->mUuid);
 				return;
 			}
 
@@ -50,9 +50,9 @@ void Session::Start()
 		catch (const std::exception& aE)
 		{
 			// 读取出错，删除自身连接
-			std::cout << "Uid[" << self->mUid << "] read wrong, error is :" << std::endl;
+			std::cout << "Uid[" << self->mUuid << "] read wrong, error is :" << std::endl;
 			std::cout << aE.what() << std::endl;
-			self->mChatServerPtr->RemoveSession(self->mUid);
+			self->mChatServerPtr->RemoveSession(self->mUuid);
 		}
 	});
 }
@@ -74,17 +74,17 @@ void Session::Send(const std::string& aSendData)
 		{
 			if (aEc)
 			{
-				std::cout << "Uid[" << self->mUid << "] write wrong, error is :" << std::endl;
+				std::cout << "Uid[" << self->mUuid << "] write wrong, error is :" << std::endl;
 				std::cout << aEc.what() << std::endl;
-				self->mChatServerPtr->RemoveSession(self->mUid);
+				self->mChatServerPtr->RemoveSession(self->mUuid);
 				return;
 			}
 		}
 		catch (const std::exception& aE)
 		{
-			std::cout << "Uid[" << self->mUid << "] write wrong, error is :" << std::endl;
+			std::cout << "Uid[" << self->mUuid << "] write wrong, error is :" << std::endl;
 			std::cout << aE.what() << std::endl;
-			self->mChatServerPtr->RemoveSession(self->mUid);
+			self->mChatServerPtr->RemoveSession(self->mUuid);
 		}
 	});
 }
@@ -95,7 +95,7 @@ void Session::Accept()
 	mWebSocket->async_accept([self](beast::error_code aEc) {
 		if (aEc)
 		{
-			std::cout << "Uid[" << self->mUid << "] accept wrong, error is :" << std::endl;
+			std::cout << "Uid[" << self->mUuid << "] accept wrong, error is :" << std::endl;
 			std::cout << aEc.what() << std::endl;
 			return;
 		}
@@ -109,9 +109,9 @@ void Session::Close()
 {
 }
 
-std::string Session::GetUid()
+std::string Session::GetUuid()
 {
-	return mUid;
+	return mUuid;
 }
 
 boost::asio::ip::tcp::socket& Session::GetSocket()
@@ -149,7 +149,7 @@ void ChatServer::Start()
 void ChatServer::AddSession(std::shared_ptr<Session> aSession)
 {
 	std::lock_guard<std::mutex> lg(mMtx);
-	mSessions[aSession->GetUid()] = aSession;
+	mSessions[aSession->GetUuid()] = aSession;
 }
 
 void ChatServer::RemoveSession(const std::string& aUid)

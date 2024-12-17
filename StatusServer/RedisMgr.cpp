@@ -159,6 +159,30 @@ bool RedisMgr::Set(const std::string& aKey, const std::string& aValue)
 	return true;
 }
 
+bool RedisMgr::SetEX(const std::string& aKey, const std::string& aValue, int aExpireTime)
+{
+	redisContext* context = mRedisConnectionPool->GetRedisConnection();
+	redisReply* reply = (redisReply*)redisCommand(context, "SETEX %s %d %s", aKey.c_str(), aExpireTime, aValue.c_str());
+	if (reply == nullptr)
+	{
+		std::cout << "Execute Command [ SETEX " << aKey << " " << aExpireTime << " " << aValue << "] Failed" << std::endl;
+		return false;
+	}
+
+	if (reply->type != REDIS_REPLY_STATUS || (strcmp(reply->str, "OK") != 0 && strcmp(reply->str, "ok") != 0))
+	{
+		std::cout << "Execute Command [ SETEX " << aKey << " " << aExpireTime << " " << aValue << " ] Failed" << std::endl;
+		freeReplyObject(reply);
+		return false;
+	}
+
+	freeReplyObject(reply);
+	std::cout << "Execute Command [ SET " << aKey << " " << aValue << " ] Successed" << std::endl;
+
+	mRedisConnectionPool->ReturnRedisConnection(context);
+	return true;
+}
+
 bool RedisMgr::Auth(const std::string& aPassword)
 {
 	redisContext* context = mRedisConnectionPool->GetRedisConnection();
