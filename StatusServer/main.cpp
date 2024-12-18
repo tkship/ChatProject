@@ -4,8 +4,10 @@
 int main()
 {
 	ConfigMgr& configMgr = ConfigMgr::GetInstance();
+	std::string host = configMgr["StatusServer"]["host"];
+	std::string port = configMgr["StatusServer"]["port"];
 
-	std::string serverAddress = configMgr["StatusServer"]["host"] + ":" + configMgr["StatusServer"]["port"];
+	std::string serverAddress = host + ":" + port;
 	StatusServer statusServer;
 
 	grpc::ServerBuilder builder;
@@ -22,7 +24,7 @@ int main()
 		return -1;
 	}
 
-	std::cout << "StatusServer is running" << std::endl;
+	std::cout << "StatusServer[" << port << "] is running" << std::endl;
 
 	// ×èÈûµÈ´ý
 	server->Wait();

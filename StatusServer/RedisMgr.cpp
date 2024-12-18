@@ -120,6 +120,13 @@ bool RedisMgr::Get(const std::string& aKey, std::string& oValue)
 		return false;
 	}
 
+	if (reply->type == REDIS_REPLY_NIL)
+	{
+		// 没找到对应的key
+		oValue = "";
+		return true;
+	}
+
 	if (reply->type != REDIS_REPLY_STRING)
 	{
 		std::cout << "Execute Command [ GET " << aKey << " ] Failed" << std::endl;

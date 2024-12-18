@@ -56,6 +56,8 @@ int main()
     boost::asio::io_service service;
     HttpServer server(port, service);
 
+    std::cout << "GateServer[" << port << "] is running" << std::endl;
+
     service.run();
 
 

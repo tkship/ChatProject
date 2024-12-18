@@ -2,7 +2,6 @@
 
 #include <boost/beast.hpp>
 #include <boost/asio.hpp>
-#include <json/json.h>
 
 #include <queue>
 #include <unordered_map>
@@ -27,6 +26,7 @@ public:
 
 	std::string GetUuid();
 	boost::asio::ip::tcp::socket& GetSocket();
+	std::string GetRecvData();
 private:
 	std::string mUuid;  // 反向检索ChatServer中的自己，错误时删除自身
 	ChatServer* mChatServerPtr;  // 反指ChatServer;

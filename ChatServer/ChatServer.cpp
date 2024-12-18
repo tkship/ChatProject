@@ -1,6 +1,7 @@
 #include "ChatServer.h"
 #include "IoServicePool.h"
 #include "ConfigMgr.h"
+#include "LogicSystem.h"
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -40,11 +41,13 @@ void Session::Start()
 				return;
 			}
 
-			// 暂时原模原样发回去
-			self->mWebSocket->text(self->mWebSocket->got_text());
-			std::string recvData = beast::buffers_to_string(self->mRecvBuffer.data());
+			//// 暂时原模原样发回去
+			//self->mWebSocket->text(self->mWebSocket->got_text());
+			//std::string recvData = beast::buffers_to_string(self->mRecvBuffer.data());
+			LogicSystem::GetInstance().HandleMes(self);
+
+			//self->Send(std::move(recvData));
 			self->mRecvBuffer.consume(self->mRecvBuffer.size());  // 清除缓冲区
-			self->Send(std::move(recvData));
 			self->Start();
 		}
 		catch (const std::exception& aE)
@@ -119,11 +122,17 @@ boost::asio::ip::tcp::socket& Session::GetSocket()
 	return beast::get_lowest_layer(*mWebSocket).socket();
 }
 
+std::string Session::GetRecvData()
+{
+	std::string recvData = beast::buffers_to_string(mRecvBuffer.data());
+
+	return recvData;
+}
+
 ChatServer::ChatServer(unsigned short aPort, boost::asio::io_context& aIoContext)
 	: mAcceptIoContext(aIoContext)
 	, mAcceptor(aIoContext, { boost::asio::ip::tcp::v4(), aPort })
 {
-	std::cout << "ChatServer is running" << std::endl;
 	Start();
 }
 

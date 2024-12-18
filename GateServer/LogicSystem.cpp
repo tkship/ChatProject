@@ -32,14 +32,14 @@ LogicSystem::LogicSystem()
         Json::Value retRoot;
         if (!reader.parse(bodyData, root))
         {
-            retRoot["error"] = "JsonParseError";
+            retRoot["error"] = Json_ParseError;
             beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
             return;
         }
 
         if (!root.isMember("email"))
         {
-            retRoot["error"] = "JsonParseError";
+            retRoot["error"] = Json_ParseError;
             beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
             return;
         }
@@ -61,7 +61,7 @@ LogicSystem::LogicSystem()
         Json::Value retRoot;
         if (!reader.parse(bodyData, root))
         {
-            retRoot["error"] = "JsonParseError";
+            retRoot["error"] = Json_ParseError;
             beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
             return;
         }
@@ -72,7 +72,7 @@ LogicSystem::LogicSystem()
             || !root.isMember("confirmPwd")
             || !root.isMember("verifyCode"))
         {
-            retRoot["error"] = "JsonParseError";
+            retRoot["error"] = Json_ParseError;
             beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
             return;
         }
@@ -85,7 +85,7 @@ LogicSystem::LogicSystem()
         
         if (!RedisMgr::GetInstance().Get(email, trueVerifyCode))
         {
-            retRoot["error"] = Redis_KeyNotFound;
+            retRoot["error"] = Redis_KeyNotFound;  // ÓÐÎÊÌâ todo
             beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
             return;
         }
@@ -127,7 +127,7 @@ LogicSystem::LogicSystem()
         Json::Value retRoot;
         if (!reader.parse(bodyData, root))
         {
-            retRoot["error"] = "JsonParseError";
+            retRoot["error"] = Json_ParseError;
             beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
             return;
         }
@@ -137,7 +137,7 @@ LogicSystem::LogicSystem()
             || !root.isMember("confirmPwd")
             || !root.isMember("verifyCode"))
         {
-            retRoot["error"] = "JsonParseError";
+            retRoot["error"] = Json_ParseError;
             beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
             return;
         }
@@ -191,7 +191,7 @@ LogicSystem::LogicSystem()
         Json::Value retRoot;
         if (!reader.parse(bodyData, root))
         {
-            retRoot["error"] = "JsonParseError";
+            retRoot["error"] = Json_ParseError;
             beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
             return;
         }
@@ -199,7 +199,7 @@ LogicSystem::LogicSystem()
         if (!root.isMember("email")
             || !root.isMember("password"))
         {
-            retRoot["error"] = "JsonParseError";
+            retRoot["error"] = Json_ParseError;
             beast::ostream(aConnection->mResponse.body()) << retRoot.toStyledString();
             return;
         }
@@ -223,6 +223,7 @@ LogicSystem::LogicSystem()
 
         GetChatServerRsp response = StatusClient::GetInstance().GetChatServer(uid);
         retRoot["error"] = response.error();
+        retRoot["uid"] = std::to_string(uid); 
         retRoot["host"] = response.host();
         retRoot["port"] = response.port();
         retRoot["token"] = response.token();
