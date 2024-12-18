@@ -14,14 +14,14 @@ StatusServer::StatusServer()
 	std::string port1 = configMgr["ChatServer1"]["port"];
 	std::string host2 = configMgr["ChatServer1"]["host"];
 	std::string port2 = configMgr["ChatServer2"]["port"];
-	mChatServerMes.push_back({ host1, port1 });
-	mChatServerMes.push_back({ host2, port2 });
+	mChatServerInfo.push_back({ host1, port1 });
+	mChatServerInfo.push_back({ host2, port2 });
 }
 
 Status StatusServer::GetChatServer(ServerContext* context, const GetChatServerReq* aReq, GetChatServerRsp* aRsp)
 {
-	mIndex = (mIndex+1) % mChatServerMes.size();
-	ChatServerMes& chosenChatServer = mChatServerMes[mIndex];
+	mIndex = (mIndex+1) % mChatServerInfo.size();
+	ChatServerInfo& chosenChatServer = mChatServerInfo[mIndex];
 
 	// 此时处在登陆的最后一步
 	// 先将token设置进redis，定时过期
@@ -34,10 +34,27 @@ Status StatusServer::GetChatServer(ServerContext* context, const GetChatServerRe
 	std::string token = GenerateToken();
 	RedisMgr::GetInstance().SetEX(uid, token, 20);
 
+	// 伪登录状态  只有uid和对应chatServer的地址对应
+	// 如果ChatServer离线或非法请求的情况，TokenMap中没有对应的关系
+	// 每次检查时如果TokenMap中没有对应的关系，把ServerMap中的关系也删除
+	mUserIdChatServerMap[aReq->uid()] = chosenChatServer;
+
 	aRsp->set_error(ErrorCode::Success);
 	aRsp->set_host(chosenChatServer.host);
 	aRsp->set_port(chosenChatServer.port);
 	aRsp->set_token(token);
+
+	return Status::OK;
+}
+
+Status StatusServer::Login(ServerContext* context, const LoginReq* aReq, LoginRsp* aRsp)
+{
+	int uid = aReq->uid();
+	std::string token = aReq->token();
+
+	mUserIdTokenMap[uid] = token;
+	
+	aRsp->set_error(ErrorCode::Success);
 
 	return Status::OK;
 }

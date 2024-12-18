@@ -44,7 +44,7 @@ void Session::Start()
 			//// 暂时原模原样发回去
 			//self->mWebSocket->text(self->mWebSocket->got_text());
 			//std::string recvData = beast::buffers_to_string(self->mRecvBuffer.data());
-			LogicSystem::GetInstance().HandleMes(self);
+			LogicSystem::GetInstance().HandleMsg(self);
 
 			//self->Send(std::move(recvData));
 			self->mRecvBuffer.consume(self->mRecvBuffer.size());  // 清除缓冲区

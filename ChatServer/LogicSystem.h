@@ -23,7 +23,7 @@ public:
 	
 	static LogicSystem& GetInstance();
 
-	void HandleMes(std::shared_ptr<Session> aSession);
+	void HandleMsg(std::shared_ptr<Session> aSession);
 
 private:
 	void RegisterHandler(MsgId aMsgId, CallBackFunc aFunc);

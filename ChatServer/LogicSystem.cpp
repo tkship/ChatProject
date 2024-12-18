@@ -1,6 +1,7 @@
 #include "LogicSystem.h"
 #include "ChatServer.h"
 #include "RedisMgr.h"
+#include "StatusClient.h"
 
 #include <iostream>
 
@@ -28,8 +29,9 @@ LogicSystem::LogicSystem()
 			return;
 		}
 
-		retRoot["error"] = Success;
-		// 将Token写入StatusServer todo
+		// 将Token写入StatusServer
+		LoginRsp loginRsp = StatusClient::GetInstance().Login(std::atoi(uid.c_str()), token);
+		retRoot["error"] = loginRsp.error();
 	});
 }
 
@@ -43,7 +45,7 @@ LogicSystem& LogicSystem::GetInstance()
 	return self;
 }
 
-void LogicSystem::HandleMes(std::shared_ptr<Session> aSession)
+void LogicSystem::HandleMsg(std::shared_ptr<Session> aSession)
 {
 	// 解析Json
 	Json::Value root;
@@ -70,7 +72,6 @@ void LogicSystem::HandleMes(std::shared_ptr<Session> aSession)
 		aSession->Send(retRoot.toStyledString());
 		return;
 	}
-
 
 	mCallBackMap[msgId](root, aSession);
 }
